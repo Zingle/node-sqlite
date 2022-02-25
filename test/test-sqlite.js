@@ -61,10 +61,31 @@ describe("Database", () => {
       const db = {run: sinon.spy((_, fn) => fn())};
       const sqlite = new Database(db);
       const sql = {toString() { return "select 1"; }};
-
       await sqlite.run(sql);
+
       expect(db.run.calledOnce).to.be(true);
       expect(db.run.calledWith(String(sql))).to.be(true);
+    });
+
+    it("should return number of records affected", async () => {
+      const sqlite = Database.memory();
+      await sqlite.run("create table t (id int, key text)");
+      await sqlite.run("insert into t values (1, 'foo')");
+      await sqlite.run("insert into t values (2, 'bar')");
+      const result = await sqlite.run("update t set key = 'bar'");
+
+      expect(result).to.be.an("object");
+      expect(result.changes).to.be(2);
+    });
+
+    it("should return the ID of the last inserted record", async () => {
+      const sqlite = Database.memory();
+      await sqlite.run("create table t (id int, key text)");
+      await sqlite.run("insert into t values (1, 'foo')")
+      const result = await sqlite.run("insert into t values (2, 'bar')");
+
+      expect(result).to.be.an("object");
+      expect(result.lastID).to.be(2);
     });
   });
 
@@ -143,6 +164,19 @@ describe("Statement", () => {
 
       const row = await sqlite.get("select count(*) c from t");
       expect(row.c).to.be(2);
+    });
+
+    it("should return number of records affected", async () => {
+      const result = await insert.run(1, "foo");
+      expect(result).to.be.an("object");
+      expect(result.changes).to.be(1);
+    });
+
+    it("should return the ID of the last inserted record", async () => {
+      await insert.run(1, "foo");
+      const result = await insert.run(2, "bar");
+      expect(result).to.be.an("object");
+      expect(result.lastID).to.be(2);
     });
   });
 

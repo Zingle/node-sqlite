@@ -77,8 +77,8 @@ export class Database {
 
   async run(sql) {
     return new Promise((resolve, reject) => {
-      this.db.run(String(sql), err => {
-        if (err) reject(err); else resolve();
+      this.db.run(String(sql), function(err) {
+        if (err) reject(err); else resolve(this);
       });
     });
   }
@@ -138,8 +138,8 @@ export class Statement {
 
   async run(...params) {
     return new Promise((resolve, reject) => {
-      this.stmt.run(...params, err => {
-        if (err) reject(err); else resolve();
+      this.stmt.run(...params, function(err) {
+        if (err) reject(err); else resolve(this);
       });
     });
   }
