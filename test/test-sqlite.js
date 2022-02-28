@@ -47,7 +47,7 @@ describe("Database", () => {
   });
 
   describe(".run(sql)", () => {
-    it("should run query on the DB", async () => {
+    it("should run SQL on the DB", async () => {
       const db = {run: sinon.spy((_, fn) => fn())};
       const sqlite = new Database(db);
       const sql = "select 1";
@@ -87,6 +87,17 @@ describe("Database", () => {
       expect(result).to.be.an("object");
       expect(result.lastID).to.be(2);
     });
+
+    it("should only run the first statement", async () => {
+      const sqlite = Database.memory();
+      await sqlite.run("create table t (id int, key text)");
+      await sqlite.run(`
+        insert into t values (1, 'foo');
+        insert into t values (2, 'bar');
+      `);
+      const {id} = await sqlite.get("select id from t order by id desc limit 1");
+      expect(id).to.be(1);
+    });
   });
 
   describe(".each(sql)", () => {
@@ -113,6 +124,39 @@ describe("Database", () => {
       expect(rows[1]).to.be.an("object");
       expect(rows[1].id).to.be(2);
       expect(rows[1].key).to.be("bar");
+    });
+  });
+
+  describe(".exec(sql)", () => {
+    it("should execute SQL on the DB", async () => {
+      const db = {exec: sinon.spy((_, fn) => fn())};
+      const sqlite = new Database(db);
+      const sql = "select 1";
+
+      await sqlite.exec(sql);
+      expect(db.exec.calledOnce).to.be(true);
+      expect(db.exec.calledWith(sql)).to.be(true);
+    });
+
+    it("should stringify argument", async () => {
+      const db = {exec: sinon.spy((_, fn) => fn())};
+      const sqlite = new Database(db);
+      const sql = {toString() { return "select 1"; }};
+      await sqlite.exec(sql);
+
+      expect(db.exec.calledOnce).to.be(true);
+      expect(db.exec.calledWith(String(sql))).to.be(true);
+    });
+
+    it("should run multiple statements", async () => {
+      const sqlite = Database.memory();
+      await sqlite.run("create table t (id int, key text)");
+      await sqlite.exec(`
+        insert into t values (1, 'foo');
+        insert into t values (2, 'bar');
+      `);
+      const {id} = await sqlite.get("select id from t order by id desc limit 1");
+      expect(id).to.be(2);
     });
   });
 
