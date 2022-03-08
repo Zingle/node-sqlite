@@ -1,12 +1,22 @@
 {
   "name": "@zingle/sqlite",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "async Sqlite database class",
   "type": "module",
   "exports": "./sqlite.js",
   "scripts": {
     "test": "mocha"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Zingle/node-sqlite.git"
+  },
+  "author": "Richard Remer <reanjr@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zingle/node-sqlite/issues"
+  },
+  "homepage": "https://github.com/Zingle/node-sqlite#readme",
   "dependencies": {
     "@zingle/synch": "^0.0.1",
     "sqlite3": "^5.0.2"
