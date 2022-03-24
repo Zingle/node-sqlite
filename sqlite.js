@@ -1,11 +1,8 @@
-import {EventEmitter} from "events";
 import Sqlite3 from "sqlite3";
 import synch from "@zingle/synch";
 
-export class Database extends EventEmitter {
+export class Database {
   constructor(db) {
-    super();
-
     this.connection = Promise.resolve(true);
 
     if (typeof db === "string") {

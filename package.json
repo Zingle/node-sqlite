@@ -1,6 +1,6 @@
 {
   "name": "@zingle/sqlite",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "async Sqlite database class",
   "type": "module",
   "exports": "./sqlite.js",
