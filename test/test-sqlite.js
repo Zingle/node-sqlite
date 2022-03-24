@@ -19,19 +19,6 @@ describe("Database", () => {
       const db = new Database(sqlite);
       expect(db.db).to.be(sqlite);
     });
-
-    it("should emit errors from db", () => {
-      const spy = sinon.spy();
-      const sqlite = new EventEmitter();
-      const db = new Database(sqlite);
-      const err = new Error("failure");
-
-      db.on("error", spy);
-      sqlite.emit("error", err);
-
-      expect(spy.calledOnce).to.be(true);
-      expect(spy.calledWith(err)).to.be(true);
-    });
   });
 
   describe("Database.memory()", () => {
@@ -47,6 +34,29 @@ describe("Database", () => {
       const db = Database.disk();
       expect(db.db.filename).to.be("");
       await db.close();
+    });
+  });
+
+  describe(".connected()", () => {
+    it("should resolve on successful connection", async () => {
+      const db = new Database(":memory:");
+      await db.connected();
+    });
+
+    it("should reject on connection failure", async () => {
+      const db = new Database("missing/file/which/will/error.db");
+      let error;
+
+      try { await db.connected(); } catch (err) { error = err; }
+
+      expect(error).to.be.an(Error);
+      expect(error.code).to.be("SQLITE_CANTOPEN");
+    });
+
+    it("should always resolve when connection object is injected", async () => {
+      const sqlite = {on: () => {}};
+      const db = new Database(sqlite);
+      await db.connected();
     });
   });
 

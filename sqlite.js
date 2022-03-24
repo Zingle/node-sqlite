@@ -6,11 +6,16 @@ export class Database extends EventEmitter {
   constructor(db) {
     super();
 
+    this.connection = Promise.resolve(true);
+
     if (typeof db === "string") {
-      db = new Sqlite3.Database(db);
+      this.connection = new Promise((resolve, reject) => {
+        db = new Sqlite3.Database(db, err => {
+          if (err) reject(err); else resolve(true);
+        });
+      });
     }
 
-    db.on("error", err => this.emit("error", err));
     this.db = db;
   }
 
@@ -32,6 +37,10 @@ export class Database extends EventEmitter {
         if (err) reject(err); else resolve();
       });
     });
+  }
+
+  async connected() {
+    return this.connection;
   }
 
   async *each(sql) {
