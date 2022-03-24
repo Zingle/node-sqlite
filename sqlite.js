@@ -1,12 +1,16 @@
+import {EventEmitter} from "events";
 import Sqlite3 from "sqlite3";
 import synch from "@zingle/synch";
 
-export class Database {
+export class Database extends EventEmitter {
   constructor(db) {
+    super();
+
     if (typeof db === "string") {
       db = new Sqlite3.Database(db);
     }
 
+    db.on("error", err => this.emit("error", err));
     this.db = db;
   }
 

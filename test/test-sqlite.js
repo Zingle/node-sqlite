@@ -1,3 +1,4 @@
+import {EventEmitter} from "events";
 import expect from "expect.js";
 import sinon from "sinon";
 import Sqlite3 from "sqlite3";
@@ -14,9 +15,22 @@ describe("Database", () => {
     });
 
     it("should use database if provided", async () => {
-      const sqlite = {};
+      const sqlite = new EventEmitter();
       const db = new Database(sqlite);
       expect(db.db).to.be(sqlite);
+    });
+
+    it("should emit errors from db", () => {
+      const spy = sinon.spy();
+      const sqlite = new EventEmitter();
+      const db = new Database(sqlite);
+      const err = new Error("failure");
+
+      db.on("error", spy);
+      sqlite.emit("error", err);
+
+      expect(spy.calledOnce).to.be(true);
+      expect(spy.calledWith(err)).to.be(true);
     });
   });
 
@@ -38,7 +52,7 @@ describe("Database", () => {
 
   describe(".close()", () => {
     it("should close the DB", async () => {
-      const db = {close: sinon.spy(fn => fn())};
+      const db = {close: sinon.spy(fn => fn()), on: () => {}};
       const sqlite = new Database(db);
 
       await sqlite.close();
@@ -48,7 +62,7 @@ describe("Database", () => {
 
   describe(".run(sql)", () => {
     it("should run SQL on the DB", async () => {
-      const db = {run: sinon.spy((_, fn) => fn())};
+      const db = {run: sinon.spy((_, fn) => fn()), on: () => {}};
       const sqlite = new Database(db);
       const sql = "select 1";
 
@@ -58,7 +72,7 @@ describe("Database", () => {
     });
 
     it("should stringify argument", async () => {
-      const db = {run: sinon.spy((_, fn) => fn())};
+      const db = {run: sinon.spy((_, fn) => fn()), on: () => {}};
       const sqlite = new Database(db);
       const sql = {toString() { return "select 1"; }};
       await sqlite.run(sql);
@@ -129,7 +143,7 @@ describe("Database", () => {
 
   describe(".exec(sql)", () => {
     it("should execute SQL on the DB", async () => {
-      const db = {exec: sinon.spy((_, fn) => fn())};
+      const db = {exec: sinon.spy((_, fn) => fn()), on: () => {}};
       const sqlite = new Database(db);
       const sql = "select 1";
 
@@ -139,7 +153,7 @@ describe("Database", () => {
     });
 
     it("should stringify argument", async () => {
-      const db = {exec: sinon.spy((_, fn) => fn())};
+      const db = {exec: sinon.spy((_, fn) => fn()), on: () => {}};
       const sqlite = new Database(db);
       const sql = {toString() { return "select 1"; }};
       await sqlite.exec(sql);
